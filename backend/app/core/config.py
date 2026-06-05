@@ -5,6 +5,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Enterprise Knowledge Assistant (EKA)"
     API_V1_STR: str = "/api/v1"
+    ENVIRONMENT: str = "development"
+    LOG_LEVEL: str = "INFO"
+    LOG_FORMAT: str = "JSON"  # Options: "JSON", "TEXT"
 
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of strings
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000"]'
