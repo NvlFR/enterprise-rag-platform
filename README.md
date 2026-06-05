@@ -167,34 +167,27 @@ graph TD
 ├── tests/                  # Integration & E2E Tests
 └── docker-compose.yml      # Orchestration
 ```
+## 🚀 Quick Start
 
-## 🚀 Installation Guide
+Get started with EKA in minutes:
 
-### Prerequisites
-- Python 3.10+
-- Node.js 18+
-- PostgreSQL with `pgvector`
-- Docker & Docker Compose
-
-### Step 1: Clone the Repository
 ```bash
+# 1. Clone the repository
 git clone https://github.com/your-username/enterprise-knowledge-assistant.git
 cd enterprise-knowledge-assistant
+
+# 2. Install dependencies (creates .venv automatically)
+make install
+
+# 3. Setup environment variables
+cp backend/.env.example backend/.env
+
+# 4. Run the backend
+source .venv/bin/activate
+uvicorn backend.app.main:app --reload
 ```
 
-### Step 2: Backend Setup
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### Step 3: Frontend Setup
-```bash
-cd ../frontend
-npm install
-```
+## 🛠️ Tech Stack
 
 ## 🔑 Environment Variables
 
@@ -328,10 +321,10 @@ We use the **RAGAS** (RAG Assessment) framework to measure:
 
 ## 👨‍💻 Author
 
-**Your Name**
-- GitHub: [@your-username](https://github.com/your-username)
-- LinkedIn: [Your Profile](https://linkedin.com/in/your-profile)
-- Portfolio: [your-portfolio.com](https://your-portfolio.com)
+**Noval Faturrahman**
+- GitHub: [@NvlFR](https://github.com/NvlFR)
+- LinkedIn: [novalfaturrahman-ai](https://www.linkedin.com/in/novalfaturrahman-ai/)
+- Portfolio: [noval.faturrahman.ai](https://noval.faturrahman.ai)
 
 ---
 
