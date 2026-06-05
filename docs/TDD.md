@@ -59,7 +59,7 @@ Enterprise Knowledge Assistant (EKA) is a RAG-based platform designed to provide
 ## 6. Scalability & Monitoring
 - **Horizontal Scaling:** API and Worker pods can scale independently based on CPU/Memory/Queue depth.
 - **Database Scaling:** PostgreSQL read-replicas for retrieval-heavy workloads.
-- **Observability:** 
+- **Observability:**
     - **Logs:** ELK Stack.
     - **Metrics:** Prometheus/Grafana.
     - **Tracing:** Jaeger for RAG pipeline bottlenecks.

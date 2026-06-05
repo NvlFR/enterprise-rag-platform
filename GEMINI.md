@@ -40,12 +40,12 @@ The project follows a decoupled architecture:
 
 - **Linting & Formatting:** Use `ruff` for Python files. Run `make lint` and `make format`.
 - **Pre-commit Hooks:** Managed by `pre-commit`. Ensure they are installed (`pre-commit install`).
-- **Dependency Management:** 
+- **Dependency Management:**
   - Backend: `pyproject.toml` (standardized via TASK-001).
   - Frontend: `package.json`.
 - **API Versioning:** All endpoints are prefixed with `/api/v1`.
 - **Naming:** Follow standard PEP 8 for Python and CamelCase for React components.
-- **Testing:** 
+- **Testing:**
   - Use `pytest` for backend unit and integration tests.
   - Implement RAGAS for evaluating RAG pipeline quality (Faithfulness, Relevance, Precision).
   - Target Hallucination Rate: < 5%.

@@ -7,7 +7,7 @@
 [![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-> **Transform your corporate documents into an intelligent conversational engine.** 
+> **Transform your corporate documents into an intelligent conversational engine.**
 
 Enterprise Knowledge Assistant (EKA) is a production-grade **Retrieval-Augmented Generation (RAG)** platform designed for mid-market and enterprise-scale knowledge management. It enables organizations to ingest massive volumes of internal documents—PDFs, SOPs, FAQs, and manuals—and turn them into a searchable, citation-backed AI expert.
 
@@ -91,20 +91,20 @@ The system follows a modern microservices-inspired architecture designed for sca
 graph TD
     User((User)) -->|React Frontend| FE[Next.js Application]
     FE -->|REST API| BE[FastAPI Backend]
-    
+
     subgraph "Core Services"
         BE --> Auth[Auth Service]
         BE --> Doc[Document Service]
         BE --> Chat[Chat Service]
     end
-    
+
     subgraph "RAG Engine"
         Doc --> Parser[Text Extraction]
         Parser --> Chunk[Chunking Engine]
         Chunk --> Embed[Embedding Service]
         Embed --> VDB[(pgvector / Vector DB)]
     end
-    
+
     subgraph "LLM Layer"
         Chat --> Retrieval[Retrieval Service]
         Retrieval --> VDB
@@ -112,7 +112,7 @@ graph TD
         Prompt --> LLM[OpenAI / Gemini]
         LLM --> Response[Response + Citations]
     end
-    
+
     BE --> DB[(PostgreSQL)]
     BE --> Cache[(Redis)]
     Doc --> S3[(S3 Storage)]

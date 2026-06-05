@@ -1044,4 +1044,3 @@ S3 Storage
 | Prompt Injection | High     | Input Validation      |
 
 ---
-

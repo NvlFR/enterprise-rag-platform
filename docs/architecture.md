@@ -42,16 +42,16 @@ graph TD
     API --> Auth
     API --> Retrieval
     API --> Ingest
-    
+
     Ingest --> Parser
     Ingest --> Embedder
     Ingest --> PG
     Ingest --> S3
-    
+
     Retrieval --> PG
     Retrieval --> Reranker
     Retrieval --> LLM
-    
+
     API --> Redis
 ```
 

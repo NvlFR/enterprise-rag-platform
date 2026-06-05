@@ -15,7 +15,7 @@ We will implement a **Cross-Encoder Reranking** step after the initial retrieval
 
 ## Implementation Details
 - **Model:** Use a lightweight Cross-Encoder model such as `bge-reranker-v2-m3`.
-- **Workflow:** 
+- **Workflow:**
     1. Retrieve Top 20-50 candidates using Hybrid Search.
     2. Pass the Query + Candidate pair through the Reranker.
     3. Select the Top 5 results with the highest scores for the final prompt.
