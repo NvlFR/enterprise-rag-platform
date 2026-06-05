@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
 
+    # Vector Search
+    DEFAULT_VECTOR_DIMENSION: int = 1536  # Default for text-embedding-3-small/large
+
     @field_validator("SQLALCHEMY_DATABASE_URI", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str | None, info: ValidationInfo) -> Any:
