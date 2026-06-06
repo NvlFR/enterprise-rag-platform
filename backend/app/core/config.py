@@ -13,6 +13,8 @@ class Settings(BaseSettings):
 
     # Security
     SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of strings
     # e.g: '["http://localhost", "http://localhost:4200", "http://localhost:3000"]'
