@@ -1,3 +1,6 @@
 from app.db.base_class import Base
 
-__all__ = ["Base"]
+from .document import Document
+from .user import User
+
+__all__ = ["Base", "User", "Document"]

@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import AnyHttpUrl, PostgresDsn, ValidationInfo, field_validator
+from pydantic import AnyHttpUrl, PostgresDsn, RedisDsn, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -55,6 +55,22 @@ class Settings(BaseSettings):
     # Redis
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
+    REDIS_PASSWORD: str | None = None
+    REDIS_DB: int = 0
+    REDIS_URL: RedisDsn | None = None
+
+    @field_validator("REDIS_URL", mode="before")
+    @classmethod
+    def assemble_redis_connection(cls, v: str | None, info: ValidationInfo) -> Any:
+        if isinstance(v, str) and v:
+            return v
+        return RedisDsn.build(
+            scheme="redis",
+            host=info.data.get("REDIS_HOST"),
+            port=info.data.get("REDIS_PORT"),
+            password=info.data.get("REDIS_PASSWORD"),
+            path=f"{info.data.get('REDIS_DB') or 0}",
+        )
 
     # AI Models
     OPENAI_API_KEY: str | None = None

@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 from app.core.config import Settings
 from pydantic import ValidationError
-from pydantic_settings.sources import SettingsError
+from pydantic_settings import SettingsError
 
 
 def test_settings_default_values():
@@ -17,6 +17,29 @@ def test_settings_default_values():
             str(settings.SQLALCHEMY_DATABASE_URI)
             == "postgresql://postgres:postgres@localhost:5432/eka_db"
         )
+        # Redis defaults
+        assert settings.REDIS_HOST == "localhost"
+        assert settings.REDIS_PORT == 6379
+        assert str(settings.REDIS_URL) == "redis://localhost:6379/0"
+
+
+def test_redis_settings():
+    with mock.patch.dict(
+        os.environ,
+        {
+            "SECRET_KEY": "test_secret",
+            "REDIS_HOST": "redis-host",
+            "REDIS_PORT": "6380",
+            "REDIS_PASSWORD": "password123",  # noqa: S105
+            "REDIS_DB": "1",
+        },
+    ):
+        settings = Settings()
+        assert settings.REDIS_HOST == "redis-host"
+        assert settings.REDIS_PORT == 6380
+        assert settings.REDIS_PASSWORD == "password123"  # noqa: S105
+        assert settings.REDIS_DB == 1
+        assert str(settings.REDIS_URL) == "redis://:password123@redis-host:6380/1"  # noqa: S105
 
 
 def test_settings_from_env():
@@ -62,4 +85,5 @@ def test_missing_secret_key():
         if "SECRET_KEY" in os.environ:
             del os.environ["SECRET_KEY"]
         with pytest.raises(ValidationError):
-            Settings()
+            # Pass _env_file=None to ensure it doesn't load from .env file
+            Settings(_env_file=None)

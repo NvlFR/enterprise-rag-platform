@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.core.redis import redis_client
 from app.db.session import SessionLocal
 
 router = APIRouter()
@@ -20,8 +21,14 @@ def get_db():
 @router.get("/health", response_model=dict[str, str])
 def health_check(db: Session = Depends(get_db)) -> Any:  # noqa: B008
     """
-    Check the health of the application, including database connectivity.
+    Check the health of the application, including database and redis connectivity.
     """
+    health_status = {
+        "status": "ok",
+        "database": "connected",
+        "redis": "connected",
+        "vector": "available",
+    }
     try:
         # Check database connectivity
         db.execute(text("SELECT 1"))
@@ -31,11 +38,25 @@ def health_check(db: Session = Depends(get_db)) -> Any:  # noqa: B008
             text("SELECT extname FROM pg_extension WHERE extname = 'vector'")
         )
         if not result.scalar():
-            return {"status": "degraded", "database": "connected", "vector": "missing"}
+            health_status["vector"] = "missing"
+            health_status["status"] = "degraded"
 
-        return {"status": "ok", "database": "connected", "vector": "available"}
+        # Check redis connectivity
+        if not redis_client.ping():
+            health_status["redis"] = "disconnected"
+            health_status["status"] = "degraded"
+
+        if health_status["status"] == "degraded":
+            return health_status
+
+        return health_status
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail={"status": "error", "database": "disconnected", "error": str(e)},
+            detail={
+                "status": "error",
+                "database": "unknown",
+                "redis": "unknown",
+                "error": str(e),
+            },
         ) from e

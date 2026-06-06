@@ -22,12 +22,15 @@ services:
     image: redis:7-alpine
     container_name: eka-redis
     restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD:-postgres}
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-postgres}
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-postgres}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -64,6 +67,8 @@ services:
       - POSTGRES_PORT=5432
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-postgres}
+      - REDIS_DB=${REDIS_DB:-0}
     ports:
       - "8000:8000"
     volumes:
