@@ -3,13 +3,15 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from app.models.enums import UserRole
+
 
 # Shared properties
 class UserBase(BaseModel):
     email: EmailStr | None = None
     is_active: bool | None = True
     full_name: str | None = None
-    role: str | None = "user"
+    role: UserRole | None = UserRole.USER
 
 
 # Properties to receive via API on creation

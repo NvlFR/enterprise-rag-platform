@@ -4,8 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.api import deps
 from app.core.redis import redis_client
 from app.db.session import SessionLocal
+from app.models.enums import UserRole
 
 router = APIRouter()
 
@@ -60,3 +62,13 @@ def health_check(db: Session = Depends(get_db)) -> Any:  # noqa: B008
                 "error": str(e),
             },
         ) from e
+
+
+@router.get("/health/admin", response_model=dict[str, str])
+def admin_health_check(
+    current_user: Any = Depends(deps.RoleChecker([UserRole.ADMIN])),  # noqa: B008
+) -> Any:
+    """
+    Restricted health check for admins only.
+    """
+    return {"status": "ok", "message": f"Hello Admin {current_user.email}"}
