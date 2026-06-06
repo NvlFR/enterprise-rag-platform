@@ -118,6 +118,24 @@ graph TD
     Doc --> S3[(S3 Storage)]
 ```
 
+## 📂 Document Storage
+
+EKA uses a decoupled storage architecture:
+- **Binary Files:** Stored in object storage (MinIO for local development, AWS S3 for production).
+- **Metadata & Vectors:** Stored in PostgreSQL with `pgvector`.
+
+The `StorageService` in `backend/app/services/storage.py` provides an async abstraction for all storage operations.
+
+### Storage Configuration
+Ensure the following variables are set in your `.env` file:
+```env
+S3_ACCESS_KEY=minioadmin
+S3_SECRET_KEY=minioadmin
+S3_BUCKET=eka-documents
+S3_ENDPOINT=http://localhost:9000
+```
+Local MinIO console is available at `http://localhost:9001`.
+
 ## 🔄 System Workflow
 
 ### 1. Ingestion Phase
@@ -173,7 +191,7 @@ Get started with EKA in minutes:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/enterprise-knowledge-assistant.git
+git clone https://github.com/NvlFR/enterprise-knowledge-assistant.git
 cd enterprise-knowledge-assistant
 
 # 2. Install dependencies (creates .venv automatically)
@@ -266,7 +284,7 @@ We use the **RAGAS** (RAG Assessment) framework to measure:
 - **Context Precision:** Are the retrieved chunks truly relevant?
 - **Hallucination Rate:** Target is **< 5%** for production readiness.
 
-## 📸 Screenshots
+<!-- ## 📸 Screenshots
 
 | Dashboard | Chat Interface |
 |-----------|----------------|
@@ -275,7 +293,7 @@ We use the **RAGAS** (RAG Assessment) framework to measure:
 ## 🎥 Demo Video
 
 [![Demo Video](https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg)](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
-*(Click above to watch the walkthrough)*
+*(Click above to watch the walkthrough)* -->
 
 ## 🚢 Deployment Guide
 

@@ -76,6 +76,14 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str | None = None
     GEMINI_API_KEY: str | None = None
 
+    # Storage (MinIO / S3)
+    S3_ACCESS_KEY: str | None = None
+    S3_SECRET_KEY: str | None = None
+    S3_BUCKET: str = "eka-documents"
+    S3_REGION: str = "us-east-1"
+    S3_ENDPOINT: str | None = None
+    S3_USE_SSL: bool = False
+
     model_config = SettingsConfigDict(
         case_sensitive=True, env_file=".env", extra="ignore"
     )

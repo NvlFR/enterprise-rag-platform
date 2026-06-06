@@ -8,8 +8,8 @@ from pydantic_settings import SettingsError
 
 
 def test_settings_default_values():
-    with mock.patch.dict(os.environ, {"SECRET_KEY": "test_secret"}):
-        settings = Settings()
+    with mock.patch.dict(os.environ, {"SECRET_KEY": "test_secret"}, clear=True):
+        settings = Settings(_env_file=None)
         assert settings.PROJECT_NAME == "Enterprise Knowledge Assistant (EKA)"
         assert settings.ENVIRONMENT == "development"
         assert settings.POSTGRES_PORT == 5432
