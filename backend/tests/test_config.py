@@ -87,3 +87,28 @@ def test_missing_secret_key():
         with pytest.raises(ValidationError):
             # Pass _env_file=None to ensure it doesn't load from .env file
             Settings(_env_file=None)
+
+
+def test_allowed_hosts_config():
+    # Test default
+    with mock.patch.dict(os.environ, {"SECRET_KEY": "test_secret"}, clear=True):
+        settings = Settings(_env_file=None)
+        assert settings.ALLOWED_HOSTS == ["*"]
+
+    # Test custom hosts list
+    with mock.patch.dict(
+        os.environ,
+        {"SECRET_KEY": "test_secret", "ALLOWED_HOSTS": '["allowed.com", "localhost"]'},
+        clear=True,
+    ):
+        settings = Settings(_env_file=None)
+        assert settings.ALLOWED_HOSTS == ["allowed.com", "localhost"]
+
+    # Test custom hosts comma-separated
+    with mock.patch.dict(
+        os.environ,
+        {"SECRET_KEY": "test_secret", "ALLOWED_HOSTS": "allowed.com,localhost"},
+        clear=True,
+    ):
+        settings = Settings(_env_file=None)
+        assert settings.ALLOWED_HOSTS == ["allowed.com", "localhost"]

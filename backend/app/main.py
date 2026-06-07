@@ -4,8 +4,10 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from starlette.datastructures import MutableHeaders
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from app.api.middleware import RequestLoggingMiddleware, SecurityHeadersMiddleware
 from app.api.v1.api import api_router
 from app.core.config import settings
 from app.core.exceptions import AppError
@@ -53,7 +55,29 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
+
+# Core Middleware registration
+# Middlewares are executed in reverse order of addition (LIFO).
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RequestIDMiddleware)
+
+if settings.BACKEND_CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            str(origin).rstrip("/") for origin in settings.BACKEND_CORS_ORIGINS
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+if settings.ALLOWED_HOSTS:
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=[str(host) for host in settings.ALLOWED_HOSTS],
+    )
 
 
 # Global Exception Handlers
@@ -102,15 +126,5 @@ async def general_exception_handler(request: Request, exc: Exception):
         },
     )
 
-
-# Set all CORS enabled origins
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
