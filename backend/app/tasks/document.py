@@ -10,6 +10,7 @@ from app.core.celery_app import celery_app
 from app.db.session import SessionLocal
 from app.models.enums import DocumentStatus
 from app.services.document import document_service
+from app.services.metadata import metadata_service
 from app.services.parser import parser_service
 from app.services.storage import storage_service
 
@@ -109,8 +110,14 @@ def process_document_task(self: Task, document_id: str) -> dict:
                 file_content = f.read()
 
             text = parser_service.parse(file_content, file_type)
+            # Extract metadata
+            metadata = metadata_service.extract(text)
+            # Update document with metadata
+            document_service.update(db, db_obj=doc, obj_in={"doc_metadata": metadata})
+
             logger.info(
-                f"Text extracted for document {document_id}, length: {len(text)}"
+                f"Text extracted and metadata generated for document {document_id}, "
+                f"length: {len(text)}"
             )
         finally:
             if os.path.exists(tmp_path):
