@@ -9,6 +9,7 @@ from app import schemas
 from app.api import deps
 from app.core import security
 from app.core.config import settings
+from app.core.ratelimit import auth_rate_limit, default_rate_limit
 from app.models.user import User
 
 router = APIRouter()
@@ -18,9 +19,12 @@ router = APIRouter()
 def login_access_token(
     db: Session = Depends(deps.get_db),  # noqa: B008
     form_data: OAuth2PasswordRequestForm = Depends(),  # noqa: B008
+    _rl: None = Depends(auth_rate_limit),  # noqa: B008
 ) -> Any:
     """
-    OAuth2 compatible token login, get an access token for future requests
+    OAuth2 compatible token login, get an access token for future requests.
+
+    Rate limited: 10 requests per 60 seconds per IP address.
     """
     user = db.query(User).filter(User.email == form_data.username).first()
     if not user or not security.verify_password(
@@ -40,8 +44,13 @@ def login_access_token(
 
 
 @router.post("/login/test-token", response_model=schemas.UserOut)
-def test_token(current_user: User = Depends(deps.get_current_user)) -> Any:  # noqa: B008
+def test_token(
+    current_user: User = Depends(deps.get_current_user),  # noqa: B008
+    _rl: None = Depends(default_rate_limit),  # noqa: B008
+) -> Any:
     """
-    Test access token
+    Test access token.
+
+    Rate limited: 60 requests per 60 seconds per authenticated user.
     """
     return current_user

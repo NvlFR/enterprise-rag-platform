@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from starlette.datastructures import MutableHeaders
 from starlette.middleware.cors import CORSMiddleware
@@ -56,9 +56,42 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
 
+
+class RateLimitHeadersMiddleware:
+    """
+    Inject X-RateLimit-* informational headers gathered by the rate-limit
+    dependency into every HTTP response.
+    """
+
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        request = Request(scope)
+
+        async def send_wrapper(message: Message):
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(scope=message)
+                limit = getattr(request.state, "ratelimit_limit", None)
+                remaining = getattr(request.state, "ratelimit_remaining", None)
+                window = getattr(request.state, "ratelimit_window", None)
+                if limit is not None:
+                    headers["X-RateLimit-Limit"] = str(limit)
+                    headers["X-RateLimit-Remaining"] = str(remaining)
+                    headers["X-RateLimit-Window"] = str(window)
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
+
 # Core Middleware registration
 # Middlewares are executed in reverse order of addition (LIFO).
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitHeadersMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RequestIDMiddleware)
 
@@ -104,6 +137,41 @@ async def app_exception_handler(request: Request, exc: AppError):
                 "details": exc.details,
             }
         },
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Handle HTTPException including HTTP 429 from rate limiter."""
+    if exc.status_code == status.HTTP_429_TOO_MANY_REQUESTS:
+        request_id = request.scope.get("request_id", "")
+        token = request_id_var.set(request_id)
+        try:
+            logger.warning(
+                "Rate limit exceeded",
+                extra={
+                    "extra_info": {
+                        "path": request.url.path,
+                        "client": str(request.client),
+                        "detail": exc.detail,
+                    }
+                },
+            )
+        finally:
+            request_id_var.reset(token)
+
+        detail = exc.detail if isinstance(exc.detail, dict) else {"message": exc.detail}
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content={"error": {"code": "RATE_LIMIT_EXCEEDED", **detail}},
+            headers=dict(exc.headers) if exc.headers else {},
+        )
+
+    # Re-raise all other HTTPExceptions as their default JSON response
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=dict(exc.headers) if exc.headers else {},
     )
 
 

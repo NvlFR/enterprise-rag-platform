@@ -108,6 +108,16 @@ class Settings(BaseSettings):
     S3_ENDPOINT: str | None = None
     S3_USE_SSL: bool = False
 
+    # Rate Limiting
+    # Master switch — set RATE_LIMIT_ENABLED=false to disable in tests
+    RATE_LIMIT_ENABLED: bool = True
+    # Default: 60 requests per 60 seconds (1 req/s burst-tolerant)
+    RATE_LIMIT_DEFAULT_REQUESTS: int = 60
+    RATE_LIMIT_DEFAULT_WINDOW_SECONDS: int = 60
+    # Auth / Login endpoints — stricter to prevent brute-force
+    RATE_LIMIT_AUTH_REQUESTS: int = 10
+    RATE_LIMIT_AUTH_WINDOW_SECONDS: int = 60
+
     model_config = SettingsConfigDict(
         case_sensitive=True, env_file=".env", extra="ignore"
     )
