@@ -81,6 +81,51 @@ services:
       minio:
         condition: service_healthy
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eka-worker
+    restart: always
+    command: celery -A app.worker.celery_app worker --loglevel=info --concurrency=2
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_SERVER=db
+      - POSTGRES_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-postgres}
+      - REDIS_DB=${REDIS_DB:-0}
+    volumes:
+      - ./backend/app:/app/backend/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eka-flower
+    restart: always
+    command: celery -A app.worker.celery_app flower --port=5555
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_SERVER=db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-postgres}
+    ports:
+      - "5555:5555"
+    depends_on:
+      - worker
+
 volumes:
   postgres_data:
   redis_data:

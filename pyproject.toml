@@ -19,6 +19,8 @@ dependencies = [
     "bcrypt<4.0.0",
     "email-validator>=2.1.0.post1",
     "python-jose[cryptography]>=3.3.0",
+    "celery[redis]>=5.4.0",
+    "flower>=2.0.1",
 ]
 
 [project.optional-dependencies]

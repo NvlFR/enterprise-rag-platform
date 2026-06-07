@@ -118,6 +118,30 @@ class Settings(BaseSettings):
     RATE_LIMIT_AUTH_REQUESTS: int = 10
     RATE_LIMIT_AUTH_WINDOW_SECONDS: int = 60
 
+    # Celery
+    CELERY_BROKER_URL: str | None = None
+    CELERY_RESULT_BACKEND: str | None = None
+
+    @field_validator("CELERY_BROKER_URL", mode="before")
+    @classmethod
+    def assemble_celery_broker(cls, v: str | None, info: ValidationInfo) -> Any:
+        if isinstance(v, str) and v:
+            return v
+        # Default ke Redis URL jika tidak diset
+        redis_url = info.data.get("REDIS_URL")
+        return str(redis_url) if redis_url else None
+
+    @field_validator("CELERY_RESULT_BACKEND", mode="before")
+    @classmethod
+    def assemble_celery_backend(cls, v: str | None, info: ValidationInfo) -> Any:
+        if isinstance(v, str) and v:
+            return v
+        redis_url = info.data.get("REDIS_URL")
+        return str(redis_url) if redis_url else None
+
+    # Document Processing
+    MAX_UPLOAD_SIZE_MB: int = 50
+
     model_config = SettingsConfigDict(
         case_sensitive=True, env_file=".env", extra="ignore"
     )
