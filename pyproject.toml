@@ -23,6 +23,14 @@ dependencies = [
     "flower>=2.0.1",
     "pymupdf>=1.24.0",
     "python-docx>=1.1.0",
+    "unstructured[pdf]>=0.14.0",
+    "langchain-text-splitters>=0.2.0",
+    "openai>=1.30.0",
+    "langchain-experimental>=0.0.60",
+    "google-generativeai>=0.5.0",
+    "tenacity>=8.3.0",
+    "PyYAML>=6.0.1",
+    "Jinja2>=3.1.4",
 ]
 
 [project.optional-dependencies]

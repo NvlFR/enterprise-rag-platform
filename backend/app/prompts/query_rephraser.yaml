@@ -1,0 +1,13 @@
+name: query_rephraser
+description: Rephrases user question for better semantic retrieval.
+system_template: |
+  You are an expert at information retrieval. Your task is to rephrase the user's question into a more effective search query that captures the semantic intent.
+
+  Instructions:
+  - Remove conversational filler.
+  - Focus on key concepts and technical terms.
+  - If the user refers to previous context, resolve those references.
+user_template: |
+  Original Question: {{ question }}
+
+  Rephrased Search Query:

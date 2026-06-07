@@ -100,6 +100,21 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str | None = None
     GEMINI_API_KEY: str | None = None
 
+    # Embedding Settings
+    EMBEDDING_PROVIDER: str = "openai"  # options: openai, gemini, mock
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+
+    # Reranker Settings
+    RERANKER_PROVIDER: str = "mock"  # options: cohere, local, mock
+    RERANKER_MODEL: str = "rerank-english-v3.0"
+    COHERE_API_KEY: str | None = None
+
+    # LLM Settings
+    LLM_PROVIDER: str = "openai"  # options: openai, gemini, mock
+    LLM_MODEL: str = "gpt-4o"
+    LLM_TEMPERATURE: float = 0.0
+    LLM_MAX_TOKENS: int = 1024
+
     # Storage (MinIO / S3)
     S3_ACCESS_KEY: str | None = None
     S3_SECRET_KEY: str | None = None
