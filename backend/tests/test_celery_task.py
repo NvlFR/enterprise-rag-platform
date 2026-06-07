@@ -116,7 +116,7 @@ class TestProcessDocumentTask:
         task_names = list(celery_app.tasks.keys())
         assert any("process_document" in name for name in task_names)
 
-    def test_task_executes_successfully(self, test_document):
+    def test_task_executes_successfully(self, test_document, db_session):
         """
         Test task berjalan tanpa error dan mengubah status ke COMPLETED.
         Menggunakan eager mode (CELERY_TASK_ALWAYS_EAGER) untuk test synchronous.
@@ -125,21 +125,33 @@ class TestProcessDocumentTask:
 
         doc_id = str(test_document.id)
 
-        # Patch SessionLocal agar menggunakan session yang di-commit
-        # Catatan: test_document sudah committed ke DB dari fixture-nya
-        with patch("app.tasks.document.SessionLocal") as mock_session_cls:
-            # Buat session baru yang terhubung ke DB test
-            test_session = TestingSessionLocal()
-            mock_session_cls.return_value = test_session
+        # Patch SessionLocal agar menggunakan session yang digunakan fixture
+        with (
+            patch("app.tasks.document.SessionLocal", return_value=db_session),
+            patch("app.tasks.document.storage_service.download_file") as mock_download,
+            patch(
+                "app.tasks.document.parser_service.parse",
+                return_value="dummy parsed text",
+            ),
+        ):
+            # Mock download to create a dummy file
+            def mock_download_side_effect(key, dest):
+                with open(dest, "w") as f:
+                    f.write("dummy content for test")
+                return None
+
+            mock_download.side_effect = mock_download_side_effect
 
             try:
+                # Perlu commit agar session di task bisa melihat dokumen
+                db_session.commit()
                 result = process_document_task.apply(args=[doc_id])
                 assert result.successful()
                 task_result = result.get()
                 assert task_result["status"] == "success"
                 assert task_result["document_id"] == doc_id
             finally:
-                test_session.close()
+                pass
 
     def test_task_handles_nonexistent_document(self):
         """Test task tidak crash saat document_id tidak ditemukan."""

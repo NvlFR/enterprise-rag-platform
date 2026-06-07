@@ -1,3 +1,6 @@
+import asyncio
+import os
+import tempfile
 import uuid
 
 from celery import Task
@@ -7,6 +10,8 @@ from app.core.celery_app import celery_app
 from app.db.session import SessionLocal
 from app.models.enums import DocumentStatus
 from app.services.document import document_service
+from app.services.parser import parser_service
+from app.services.storage import storage_service
 
 logger = get_task_logger(__name__)
 
@@ -76,19 +81,40 @@ def process_document_task(self: Task, document_id: str) -> dict:
     try:
         doc_uuid = uuid.UUID(document_id)
 
-        # 1. Update status ke PROCESSING
-        doc = document_service.update_status(
-            db, document_id=doc_uuid, status=DocumentStatus.PROCESSING
-        )
+        # Ambil document dari db yang aktif
+        doc = document_service.get(db, document_id=doc_uuid)
         if not doc:
             logger.error(f"Document {document_id} tidak ditemukan di database.")
+            db.close()
             return {"status": "error", "message": "Document not found"}
+
+        # 1. Update status ke PROCESSING
+        document_service.update_status(
+            db, document_id=doc_uuid, status=DocumentStatus.PROCESSING
+        )
 
         logger.info(f"Document {document_id} status: {doc.status}")
 
-        # === Placeholder untuk pipeline steps berikutnya ===
-        # TODO (TASK-019): Ekstraksi teks menggunakan Unstructured/PyMuPDF
-        # text = text_extraction_service.extract(doc.s3_key)
+        # 2. Extract text dari file
+        # Download file
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_path = tmp_file.name
+
+        try:
+            asyncio.run(storage_service.download_file(doc.s3_key, tmp_path))
+
+            # Parse file
+            file_type = doc.s3_key.split(".")[-1].lower()
+            with open(tmp_path, "rb") as f:
+                file_content = f.read()
+
+            text = parser_service.parse(file_content, file_type)
+            logger.info(
+                f"Text extracted for document {document_id}, length: {len(text)}"
+            )
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
 
         # TODO (TASK-020): Chunking teks
         # chunks = chunking_service.chunk(text, chunk_size=512, overlap=100)
@@ -99,7 +125,7 @@ def process_document_task(self: Task, document_id: str) -> dict:
         # TODO (TASK-022): Simpan ke pgvector
         # vector_store.save(document_id=doc_uuid, chunks=chunks, embeddings=embeddings)
 
-        # 2. Update status ke COMPLETED (placeholder — akan diisi oleh task berikutnya)
+        # 3. Update status ke COMPLETED (placeholder — akan diisi oleh task berikutnya)
         # Sementara langsung COMPLETED karena belum ada pipeline sebenarnya
         document_service.update_status(
             db, document_id=doc_uuid, status=DocumentStatus.COMPLETED
