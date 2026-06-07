@@ -122,9 +122,10 @@ graph TD
 
 EKA uses a decoupled storage architecture:
 - **Binary Files:** Stored in object storage (MinIO for local development, AWS S3 for production).
-- **Metadata & Vectors:** Stored in PostgreSQL with `pgvector`.
+- **Metadata & Status:** Managed in PostgreSQL via SQLAlchemy models.
+- **Vectors:** Stored in PostgreSQL with `pgvector`.
 
-The `StorageService` in `backend/app/services/storage.py` provides an async abstraction for all storage operations.
+The `StorageService` in `backend/app/services/storage.py` provides an async abstraction for all storage operations, while `DocumentService` manages metadata and processing status transitions.
 
 ### Storage Configuration
 Ensure the following variables are set in your `.env` file:
@@ -139,11 +140,14 @@ Local MinIO console is available at `http://localhost:9001`.
 ## 🔄 System Workflow
 
 ### 1. Ingestion Phase
-1. **Upload:** User uploads a PDF/Document.
-2. **Extraction:** System extracts raw text and metadata.
-3. **Chunking:** Text is split into optimized segments (512-1024 tokens).
-4. **Embedding:** Chunks are converted into high-dimensional vectors.
-5. **Storage:** Vectors are stored in `pgvector` for efficient similarity search.
+1. **Upload:** User uploads a PDF/Document via `POST /api/v1/documents`.
+2. **Storage:** System uploads the raw file to S3/MinIO and creates a `Document` record in PostgreSQL with `UPLOADED` status.
+3. **Async Processing:** A Celery task (`process_document_task`) is triggered to handle processing in the background:
+    - **Extraction:** Extracts text and metadata (Task-019).
+    - **Chunking:** Splits text into optimized segments (Task-020).
+    - **Embedding:** Generates vectors (Task-021).
+    - **Storage:** Persists chunks/vectors to `pgvector` (Task-022).
+4. **Completion:** Document status is updated to `COMPLETED` or `FAILED`.
 
 ### 2. Query Phase
 1. **Input:** User asks a natural language question.
@@ -161,7 +165,6 @@ Local MinIO console is available at `http://localhost:9001`.
 - **AI/ML:** OpenAI GPT-4o / Google Gemini Pro, LangChain, Sentence-Transformers.
 - **Infrastructure:** Docker, Docker Compose, Nginx.
 - **DevOps:** GitHub Actions, Prometheus, Grafana.
-
 ## 📂 Project Structure
 
 ```text
@@ -172,11 +175,14 @@ Local MinIO console is available at `http://localhost:9001`.
 │   │   ├── core/           # Configuration & Security
 │   │   ├── models/         # SQLAlchemy Models
 │   │   ├── services/       # Business Logic (RAG, Doc Processing)
-│   │   └── schemas/        # Pydantic Schemas
+│   │   ├── schemas/        # Pydantic Schemas
+│   │   ├── tasks/          # Celery Background Tasks
+│   │   └── worker.py       # Celery Worker Entry Point
 │   ├── tests/              # Pytest Suite
 │   └── main.py             # Entry Point
 ├── frontend/               # Next.js Application
-│   ├── src/
+...
+```
 │   │   ├── components/     # UI Components
 │   │   ├── hooks/          # Custom React Hooks
 │   │   └── pages/          # Application Routes
@@ -256,9 +262,11 @@ This will spin up:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/v1/auth/login` | Authenticate user & get JWT |
+| `POST` | `/api/v1/login/access-token` | Authenticate user & get JWT |
 | `POST` | `/api/v1/documents` | Upload new document |
 | `GET`  | `/api/v1/documents` | List all indexed documents |
+| `GET`  | `/api/v1/documents/{id}` | Get document details |
+| `DELETE` | `/api/v1/documents/{id}` | Delete document |
 | `POST` | `/api/v1/chat` | Send a query to the RAG engine |
 | `GET`  | `/api/v1/chat/history` | Retrieve conversation history |
 
