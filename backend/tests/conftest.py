@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from app.api import deps
@@ -45,3 +46,15 @@ def db() -> Generator:
 def client() -> Generator:
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture
+def db_mock():
+    mock = MagicMock()
+    mock.execute = AsyncMock()
+    mock.add = MagicMock()
+    mock.add_all = MagicMock()
+    mock.commit = AsyncMock()
+    mock.refresh = AsyncMock()
+    mock.delete = AsyncMock()
+    return mock

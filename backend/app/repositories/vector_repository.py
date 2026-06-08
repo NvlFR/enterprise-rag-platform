@@ -124,3 +124,10 @@ class VectorRepository:
         )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
+
+    async def get_chunk(self, chunk_id: uuid.UUID) -> DocumentChunk | None:
+        """Retrieve a specific chunk by ID."""
+        result = await self.db.execute(
+            select(DocumentChunk).where(DocumentChunk.id == chunk_id)
+        )
+        return result.scalar_one_or_none()

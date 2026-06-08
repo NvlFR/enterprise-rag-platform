@@ -8,6 +8,13 @@ system_template: |
   - Focus on key concepts and technical terms.
   - If the user refers to previous context, resolve those references.
 user_template: |
+  {% if history %}
+  Chat History:
+  {% for msg in history %}
+  {{ msg.role.capitalize() }}: {{ msg.content }}
+  {% endfor %}
+  {% endif %}
+
   Original Question: {{ question }}
 
   Rephrased Search Query:

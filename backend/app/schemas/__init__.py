@@ -1,3 +1,21 @@
+from .chat import (
+    ChatRequest as ChatRequest,
+)
+from .chat import (
+    ChatResponse as ChatResponse,
+)
+from .chat import (
+    ConversationSchema as ConversationSchema,
+)
+from .chat import (
+    FeedbackCreate as FeedbackCreate,
+)
+from .chat import (
+    FeedbackResponse as FeedbackResponse,
+)
+from .chat import (
+    MessageSchema as MessageSchema,
+)
 from .document import (
     DocumentCreate as DocumentCreate,
 )

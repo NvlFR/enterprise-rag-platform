@@ -20,6 +20,13 @@ user_template: |
   ---
   {% endfor %}
 
+  {% if history %}
+  Chat History:
+  {% for msg in history %}
+  {{ msg.role.capitalize() }}: {{ msg.content }}
+  {% endfor %}
+  {% endif %}
+
   Question: {{ question }}
 
   Answer:
