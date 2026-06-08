@@ -96,15 +96,17 @@ app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(RequestIDMiddleware)
 
 if settings.BACKEND_CORS_ORIGINS:
+    origins = [str(origin).rstrip("/") for origin in settings.BACKEND_CORS_ORIGINS]
+    logger.info(f"Configuring CORS with origins: {origins}")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            str(origin).rstrip("/") for origin in settings.BACKEND_CORS_ORIGINS
-        ],
+        allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+else:
+    logger.warning("CORS is NOT configured (BACKEND_CORS_ORIGINS is empty)")
 
 if settings.ALLOWED_HOSTS:
     app.add_middleware(
