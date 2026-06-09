@@ -74,7 +74,7 @@ export default function DesignSystemPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">I'm ready to help you with your corporate knowledge base.</p>
+              <p className="text-sm">I&apos;m ready to help you with your corporate knowledge base.</p>
             </CardContent>
           </Card>
         </div>

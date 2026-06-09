@@ -6,6 +6,7 @@ import { MarkdownRenderer } from "./markdown-renderer";
 import { User, Bot, Copy, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { SourcePopover } from "./source-popover";
 
 interface MessageBubbleProps {
   message: Message;
@@ -29,13 +30,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       <div className="container mx-auto max-w-3xl px-4 flex gap-4">
         <div className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-sm font-medium",
-          isAssistant 
-            ? "bg-blue-600 border-blue-600 text-white" 
+          isAssistant
+            ? "bg-blue-600 border-blue-600 text-white"
             : "bg-white border-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400"
         )}>
           {isAssistant ? <Bot className="h-5 w-5" /> : <User className="h-5 w-5" />}
         </div>
-        
+
         <div className="flex-1 space-y-2 overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
@@ -57,19 +58,20 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               )}
             </div>
           </div>
-          
-          <MarkdownRenderer content={message.content} />
-          
+
+          <MarkdownRenderer content={message.content} citations={message.citations} />
+
           {message.citations && message.citations.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="text-xs font-medium text-zinc-400 w-full">Sources:</span>
               {message.citations.map((citation) => (
-                <button
-                  key={citation.id}
-                  className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-                >
-                  [{citation.id}] {citation.source} {citation.page ? `p.${citation.page}` : ''}
-                </button>
+                <SourcePopover key={citation.id} citation={citation}>
+                  <button
+                    className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    [{citation.id}] {citation.source} {citation.page ? `p.${citation.page}` : ''}
+                  </button>
+                </SourcePopover>
               ))}
             </div>
           )}

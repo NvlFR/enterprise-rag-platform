@@ -6,13 +6,18 @@ import rehypeRaw from 'rehype-raw';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { cn } from '@/lib/utils';
+import { Citation } from '@/types/chat';
+import { CitationMarker } from './citation-marker';
+import React from 'react';
+import { remarkCitations } from '@/lib/remark-citations';
 
 interface MarkdownRendererProps {
   content: string;
   className?: string;
+  citations?: Citation[];
 }
 
-export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, className, citations }: MarkdownRendererProps) {
   return (
     <div
       className={cn(
@@ -21,10 +26,16 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
       )}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkCitations]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          code({ node, inline, className: codeClassName, children, ...props }: any) {
+          // @ts-expect-error - node type is from rehype
+          cite({ node, children }) {
+            const id = (node?.properties?.['data-id'] as string) || String(children);
+            return <CitationMarker id={id} citations={citations || []} />;
+          },
+          // @ts-expect-error - props are passed from react-markdown
+          code({ inline, className: codeClassName, children, ...props }) {
             const match = /language-(\w+)/.exec(codeClassName || '');
             return !inline && match ? (
               <div className="relative my-4 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
@@ -54,7 +65,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             );
           },
           // Override link to open in new tab
-          a: ({ node, ...props }) => (
+          a: ({ ...props }) => (
             <a {...props} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline" />
           ),
         }}

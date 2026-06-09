@@ -39,21 +39,24 @@ class CitationService:
         # 2. Get unique valid cited chunks
         final_cited_indices = cited_indices & valid_indices
 
-        # 3. Build source attribution list (preserving order of appearance)
-        # We also want to map document_id to unique documents to avoid repeating sources
-        unique_sources = {}
+        # 3. Build flat citation list for the frontend
+        citations = []
         for idx in sorted(final_cited_indices):
             chunk = chunks[idx - 1]
-            doc_id = str(chunk.document_id)
-            if doc_id not in unique_sources:
-                unique_sources[doc_id] = {
-                    "document_id": doc_id,
-                    "title": chunk.chunk_metadata.get("title", "Unknown Document"),
-                    "citations": [],
+            citations.append(
+                {
+                    "id": idx,
+                    "chunk_id": str(chunk.id),
+                    "document_id": str(chunk.document_id),
+                    "source": chunk.chunk_metadata.get("title")
+                    or chunk.chunk_metadata.get("filename", "Unknown Source"),
+                    "page": chunk.chunk_metadata.get("page_label")
+                    or chunk.chunk_metadata.get("page"),
+                    "text": chunk.content,
                 }
-            unique_sources[doc_id]["citations"].append(idx)
+            )
 
-        return text, list(unique_sources.values())
+        return text, citations
 
 
 citation_service = CitationService()

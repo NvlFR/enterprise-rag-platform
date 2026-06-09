@@ -34,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchCurrentUser();
     } else {
       setIsLoading(false);

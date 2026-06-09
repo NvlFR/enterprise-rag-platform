@@ -20,10 +20,14 @@ export default function LoginPage() {
       await login(email, password);
       toast.success("Logged in successfully");
       router.push("/");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login failed", error);
+      let errorMessage = "Invalid email or password";
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.detail || error.message;
+      }
       toast.error("Login failed", {
-        description: error.response?.data?.detail || "Invalid email or password",
+        description: errorMessage,
       });
     } finally {
       setIsSubmitting(false);

@@ -49,6 +49,7 @@ class DocumentListItem(BaseModel):
     id: uuid.UUID
     title: str
     status: DocumentStatus
+    doc_metadata: dict[str, Any] | None = None
     created_at: datetime
     updated_at: datetime
 

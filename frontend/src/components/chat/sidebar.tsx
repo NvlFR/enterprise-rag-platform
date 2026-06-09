@@ -1,12 +1,13 @@
 "use client";
 
-import { Plus, PanelLeft, Settings, User } from "lucide-react";
+import { Plus, PanelLeft, Settings, User, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConversationList } from "./conversation-list";
 import { Conversation } from "@/types/chat";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/use-auth";
+import Link from "next/link";
 
 interface SidebarProps {
   conversations: Conversation[];
@@ -40,11 +41,17 @@ export function Sidebar({
         </Button>
       </div>
 
-      <div className="px-4 py-2">
+      <div className="px-4 py-2 space-y-2">
         <Button onClick={onNewChat} className="w-full justify-start gap-2" variant="outline">
           <Plus className="h-4 w-4" />
           New Chat
         </Button>
+        <Link href="/documents" className="block">
+          <Button className="w-full justify-start gap-2" variant="ghost">
+            <FileText className="h-4 w-4" />
+            Documents
+          </Button>
+        </Link>
       </div>
 
       <ScrollArea className="flex-1 py-2">

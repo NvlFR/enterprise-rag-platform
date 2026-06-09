@@ -53,7 +53,7 @@ export function ChatLayout({ children }: ChatLayoutProps) {
         isOpen={isSidebarOpen}
         onToggle={toggleSidebar}
       />
-      
+
       <div className="flex flex-1 flex-col overflow-hidden relative">
         <header className="flex h-14 items-center border-b px-4 lg:hidden">
           <Button variant="ghost" size="icon" onClick={toggleSidebar}>
@@ -61,7 +61,7 @@ export function ChatLayout({ children }: ChatLayoutProps) {
           </Button>
           <span className="ml-4 font-semibold">EKA Assistant</span>
         </header>
-        
+
         <main className="flex-1 overflow-hidden relative">
           {children}
         </main>

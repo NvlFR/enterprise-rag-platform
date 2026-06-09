@@ -16,7 +16,9 @@ export interface Message {
 
 export interface Citation {
   id: number;
+  chunk_id?: string;
+  document_id?: string;
   source: string;
-  page?: number;
+  page?: number | string;
   text: string;
 }
