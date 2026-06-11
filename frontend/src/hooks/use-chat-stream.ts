@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { Message } from "@/types/chat"
 import { useAuth } from "@/hooks/use-auth"
 
@@ -13,7 +13,15 @@ interface ChatStreamOptions {
 export function useChatStream() {
   const [messages, setMessages] = useState<Message[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const { token } = useAuth()
+
+  const stopStreaming = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      setIsStreaming(false)
+    }
+  }, [])
 
   const sendMessage = useCallback(async (
     content: string,
@@ -42,6 +50,8 @@ export function useChatStream() {
     setMessages((prev) => [...prev, userMessage, assistantMessage])
     setIsStreaming(true)
 
+    abortControllerRef.current = new AbortController()
+
     try {
       const response = await fetch("/api/v1/chat/message", {
         method: "POST",
@@ -54,6 +64,7 @@ export function useChatStream() {
           conversation_id: conversationId,
           stream: true,
         }),
+        signal: abortControllerRef.current.signal,
       })
 
       if (!response.ok) {
@@ -125,18 +136,24 @@ export function useChatStream() {
         }
       }
     } catch (error) {
-      const err = error instanceof Error ? error : new Error("Unknown error")
-      setIsStreaming(false)
-      options?.onError?.(err)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log("Streaming aborted by user")
+      } else {
+        const err = error instanceof Error ? error : new Error("Unknown error")
+        setIsStreaming(false)
+        options?.onError?.(err)
 
-      // Update assistant message with error if failed
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === assistantMessageId
-            ? { ...msg, content: `Error: ${err.message}` }
-            : msg
+        // Update assistant message with error if failed
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: `Error: ${err.message}` }
+              : msg
+          )
         )
-      )
+      }
+    } finally {
+      setIsStreaming(false)
     }
   }, [token])
 
@@ -145,5 +162,6 @@ export function useChatStream() {
     setMessages,
     isStreaming,
     sendMessage,
+    stopStreaming,
   }
 }

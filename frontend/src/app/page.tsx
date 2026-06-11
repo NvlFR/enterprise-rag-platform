@@ -8,16 +8,16 @@ import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageBubble } from "@/components/chat/message-bubble";
-import { TypingIndicator } from "@/components/chat/typing-indicator";
 import { useChatStream } from "@/hooks/use-chat-stream";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { StopCircle } from "lucide-react";
 
 export default function Home() {
   const { documents, loading: docsLoading } = useDocuments();
   const { user } = useAuth();
   const [input, setInput] = useState("");
-  const { messages, isStreaming, sendMessage } = useChatStream();
+  const { messages, isStreaming, sendMessage, stopStreaming } = useChatStream();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
@@ -85,13 +85,8 @@ export default function Home() {
             ) : (
               <div className="flex flex-col pb-4">
                 {messages.map((msg) => (
-                  <MessageBubble key={msg.id} message={msg} />
+                  <MessageBubble key={msg.id} message={msg} isStreaming={isStreaming} />
                 ))}
-                {isStreaming && (
-                  <div className="px-4 py-2">
-                    <TypingIndicator />
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -99,22 +94,35 @@ export default function Home() {
           {/* Input Area */}
           <div className="p-4 border-t bg-white dark:bg-zinc-950">
             <div className="max-w-3xl mx-auto relative">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                disabled={isStreaming}
-                placeholder="Ask a question about your documents..."
-                className="pr-12 h-12 rounded-xl"
-              />
-              <Button
-                onClick={handleSend}
-                disabled={!input.trim() || isStreaming}
-                size="icon"
-                className="absolute right-1 top-1 h-10 w-10 rounded-lg transition-all"
-              >
-                <Send className={cn("h-5 w-5", isStreaming && "animate-pulse")} />
-              </Button>
+              {isStreaming ? (
+                 <Button
+                    onClick={stopStreaming}
+                    variant="outline"
+                    className="w-full h-12 rounded-xl"
+                  >
+                    <StopCircle className="h-5 w-5 mr-2" />
+                    Stop Generation
+                  </Button>
+              ) : (
+                <>
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    disabled={isStreaming}
+                    placeholder="Ask a question about your documents..."
+                    className="pr-12 h-12 rounded-xl"
+                  />
+                  <Button
+                    onClick={handleSend}
+                    disabled={!input.trim() || isStreaming}
+                    size="icon"
+                    className="absolute right-1 top-1 h-10 w-10 rounded-lg transition-all"
+                  >
+                    <Send className={cn("h-5 w-5")} />
+                  </Button>
+                </>
+              )}
             </div>
             <p className="text-[10px] text-center mt-2 text-zinc-400">
               EKA can make mistakes. Check important info.

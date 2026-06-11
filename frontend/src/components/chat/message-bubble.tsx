@@ -7,12 +7,14 @@ import { User, Bot, Copy, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { SourcePopover } from "./source-popover";
+import { TypingIndicator } from "./typing-indicator";
 
 interface MessageBubbleProps {
   message: Message;
+  isStreaming?: boolean;
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
   const isAssistant = message.role === 'assistant';
 
   const copyToClipboard = () => {
@@ -59,7 +61,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             </div>
           </div>
 
-          <MarkdownRenderer content={message.content} citations={message.citations} />
+          {isAssistant && isStreaming && message.content === "" ? (
+            <TypingIndicator />
+          ) : (
+            <MarkdownRenderer content={message.content} citations={message.citations} />
+          )}
 
           {message.citations && message.citations.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">

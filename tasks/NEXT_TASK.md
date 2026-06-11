@@ -1,46 +1,47 @@
 ---
-id: TASK-056
+id: TASK-057
 status: todo
-priority: medium
-epic: Frontend Chat Interface
-estimated_hours: 4
-dependencies: [TASK-045, TASK-053]
+priority: high
+epic: Frontend Doc Management
+estimated_hours: 5
+dependencies: [TASK-051, TASK-017]
 ---
 
-# Typing Indicators and Streaming UI
+# Document Upload Interface (Drag & Drop)
 
 ## Objective
-Implement a smooth streaming UI for assistant responses, including typing indicators and auto-scrolling.
+Implement a user-friendly interface for uploading documents, featuring drag-and-drop functionality and progress tracking.
 
 ## Business Context
-Real-time feedback makes the assistant feel more responsive and "alive," improving the overall user experience.
+Document ingestion is the first step in the RAG pipeline. A simple and reliable upload process is essential for users to add their own knowledge.
 
 ## Technical Context
-We need to handle the Server-Sent Events (SSE) stream from the backend and update the message content incrementally.
+The interface needs to interact with the multipart file upload endpoint (TASK-017).
 
 ## Requirements
-- Use `fetch` or a specialized library to consume the SSE stream from TASK-045.
-- Update the message state as chunks arrive.
-- Show a "typing" or "thinking" indicator while the stream is active.
-- Implement auto-scrolling to the bottom of the chat as new content arrives.
-- Allow the user to stop the generation (optional).
+- Create a drag-and-drop zone using `react-dropzone`.
+- Support multiple file uploads.
+- Display upload progress for each file.
+- Handle validation (file types, size limits).
+- Show success/error notifications using Toasts.
 
 ## Acceptance Criteria
-- [ ] Responses appear word-by-word (or chunk-by-chunk) in real-time.
-- [ ] Typing indicator is visible only while waiting for the next chunk.
-- [ ] The chat window automatically scrolls down as the response grows.
+- [ ] Users can drag and drop files to upload.
+- [ ] Multiple files are uploaded concurrently or sequentially.
+- [ ] Progress bars accurately reflect upload status.
+- [ ] Invalid files are rejected with a clear error message.
 
 ## Files To Create
-- /frontend/src/hooks/use-chat-stream.ts
-- /frontend/src/components/chat/typing-indicator.tsx
+- /frontend/src/components/docs/upload-zone.tsx
+- /frontend/src/components/docs/upload-progress.tsx
 
 ## Implementation Notes
-Be careful with React state updates in high-frequency streams. Consider using a `ref` or a more optimized state management approach if performance becomes an issue.
+Use the API client with `onUploadProgress` if using Axios.
 
 ## Testing Requirements
-- Test with long responses to ensure auto-scroll works.
-- Test network interruptions during streaming.
+- Test with various file sizes and types.
+- Test network failures during upload.
 
 ## Done Definition
 - All acceptance criteria met
-- Streaming experience is smooth and responsive
+- Upload interface is intuitive and reliable
