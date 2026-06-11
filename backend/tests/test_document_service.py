@@ -259,6 +259,111 @@ class TestDocumentServiceDelete:
         assert result is None
 
 
+class TestDocumentServiceSearchAndFilter:
+    def test_get_by_owner_search(self, db_session, test_user, doc_service):
+        """Test pencarian berdasarkan judul."""
+        doc_service.create(
+            db_session,
+            obj_in=DocumentCreate(
+                title="Apple Document", file_path="s3://eka/1", owner_id=test_user.id
+            ),
+        )
+        doc_service.create(
+            db_session,
+            obj_in=DocumentCreate(
+                title="Banana Report", file_path="s3://eka/2", owner_id=test_user.id
+            ),
+        )
+
+        # Search case-insensitive
+        docs = doc_service.get_by_owner(
+            db_session, owner_id=test_user.id, search="apple"
+        )
+        assert len(docs) == 1
+        assert docs[0].title == "Apple Document"
+
+        docs = doc_service.get_by_owner(
+            db_session, owner_id=test_user.id, search="report"
+        )
+        assert len(docs) == 1
+        assert docs[0].title == "Banana Report"
+
+    def test_get_by_owner_filter_status(self, db_session, test_user, doc_service):
+        """Test filter berdasarkan status."""
+        doc_service.create(
+            db_session,
+            obj_in=DocumentCreate(
+                title="Doc 1",
+                file_path="s3://eka/1",
+                owner_id=test_user.id,
+                status=DocumentStatus.COMPLETED,
+            ),
+        )
+        doc_service.create(
+            db_session,
+            obj_in=DocumentCreate(
+                title="Doc 2",
+                file_path="s3://eka/2",
+                owner_id=test_user.id,
+                status=DocumentStatus.FAILED,
+            ),
+        )
+
+        docs = doc_service.get_by_owner(
+            db_session, owner_id=test_user.id, status=DocumentStatus.COMPLETED
+        )
+        assert len(docs) == 1
+        assert docs[0].status == DocumentStatus.COMPLETED
+
+        docs = doc_service.get_by_owner(
+            db_session, owner_id=test_user.id, status=DocumentStatus.FAILED
+        )
+        assert len(docs) == 1
+        assert docs[0].status == DocumentStatus.FAILED
+
+    def test_get_by_owner_sorting(self, db_session, test_user, doc_service):
+        """Test sorting berdasarkan judul."""
+        doc_service.create(
+            db_session,
+            obj_in=DocumentCreate(
+                title="B Document", file_path="s3://eka/1", owner_id=test_user.id
+            ),
+        )
+        doc_service.create(
+            db_session,
+            obj_in=DocumentCreate(
+                title="A Document", file_path="s3://eka/2", owner_id=test_user.id
+            ),
+        )
+
+        # Sort by title ASC
+        docs = doc_service.get_by_owner(
+            db_session, owner_id=test_user.id, sort_by="title", order="asc"
+        )
+        assert docs[0].title == "A Document"
+        assert docs[1].title == "B Document"
+
+        # Sort by title DESC
+        docs = doc_service.get_by_owner(
+            db_session, owner_id=test_user.id, sort_by="title", order="desc"
+        )
+        assert docs[0].title == "B Document"
+        assert docs[1].title == "A Document"
+
+    def test_get_multi_admin_search(self, db_session, test_user, doc_service):
+        """Test get_multi (admin) dengan search."""
+        doc_service.create(
+            db_session,
+            obj_in=DocumentCreate(
+                title="Global Doc", file_path="s3://eka/1", owner_id=test_user.id
+            ),
+        )
+
+        docs = doc_service.get_multi(db_session, search="global")
+        assert len(docs) == 1
+        assert docs[0].title == "Global Doc"
+
+
 class TestDocumentStatusEnum:
     def test_all_status_values_exist(self):
         """Test semua nilai enum DocumentStatus tersedia."""

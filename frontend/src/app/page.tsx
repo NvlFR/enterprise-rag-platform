@@ -11,6 +11,7 @@ import { MessageBubble } from "@/components/chat/message-bubble";
 import { TypingIndicator } from "@/components/chat/typing-indicator";
 import { useChatStream } from "@/hooks/use-chat-stream";
 import { useState, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const { documents, loading: docsLoading } = useDocuments();

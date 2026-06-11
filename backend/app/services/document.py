@@ -37,28 +37,57 @@ class DocumentService:
         owner_id: uuid.UUID,
         skip: int = 0,
         limit: int = 100,
+        search: str | None = None,
+        status: DocumentStatus | None = None,
+        sort_by: str = "created_at",
+        order: str = "desc",
     ) -> list[Document]:
-        """Ambil semua document milik user tertentu."""
-        return (
-            db.query(Document)
-            .filter(Document.owner_id == owner_id)
-            .order_by(Document.created_at.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        """Ambil semua document milik user tertentu dengan filter dan sorting."""
+        query = db.query(Document).filter(Document.owner_id == owner_id)
+
+        if search:
+            query = query.filter(Document.title.ilike(f"%{search}%"))
+
+        if status:
+            query = query.filter(Document.status == status)
+
+        # Sorting
+        sort_column = getattr(Document, sort_by, Document.created_at)
+        if order.lower() == "asc":
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
+
+        return query.offset(skip).limit(limit).all()
 
     def get_multi(
-        self, db: Session, *, skip: int = 0, limit: int = 100
+        self,
+        db: Session,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+        search: str | None = None,
+        status: DocumentStatus | None = None,
+        sort_by: str = "created_at",
+        order: str = "desc",
     ) -> list[Document]:
-        """Ambil semua document (admin only)."""
-        return (
-            db.query(Document)
-            .order_by(Document.created_at.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
+        """Ambil semua document (admin only) dengan filter dan sorting."""
+        query = db.query(Document)
+
+        if search:
+            query = query.filter(Document.title.ilike(f"%{search}%"))
+
+        if status:
+            query = query.filter(Document.status == status)
+
+        # Sorting
+        sort_column = getattr(Document, sort_by, Document.created_at)
+        if order.lower() == "asc":
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
+
+        return query.offset(skip).limit(limit).all()
 
     def update(
         self,

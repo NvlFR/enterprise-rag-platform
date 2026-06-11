@@ -8,7 +8,12 @@ from app.api.deps import get_current_user, get_db
 from app.core.config import settings
 from app.models.enums import DocumentStatus, UserRole
 from app.models.user import User
-from app.schemas.document import DocumentCreate, DocumentListItem, DocumentRead
+from app.schemas.document import (
+    DocumentCreate,
+    DocumentListItem,
+    DocumentRead,
+    DocumentUpdate,
+)
 from app.services.document import document_service
 from app.services.storage import storage_service
 from app.tasks.document import process_document_task
@@ -112,6 +117,10 @@ async def upload_document(
 def list_documents(
     skip: int = 0,
     limit: int = 50,
+    search: str | None = None,
+    status: DocumentStatus | None = None,
+    sort_by: str = "created_at",
+    order: str = "desc",
     db: Session = Depends(get_db),  # noqa: B008
     current_user: User = Depends(get_current_user),  # noqa: B008
 ) -> list[DocumentListItem]:
@@ -120,12 +129,28 @@ def list_documents(
 
     - Admin melihat semua dokumen.
     - User biasa hanya melihat dokumen miliknya sendiri.
+    - Mendukung pencarian, filter status, dan sorting.
     """
     if current_user.role == UserRole.ADMIN:
-        docs = document_service.get_multi(db, skip=skip, limit=limit)
+        docs = document_service.get_multi(
+            db,
+            skip=skip,
+            limit=limit,
+            search=search,
+            status=status,
+            sort_by=sort_by,
+            order=order,
+        )
     else:
         docs = document_service.get_by_owner(
-            db, owner_id=current_user.id, skip=skip, limit=limit
+            db,
+            owner_id=current_user.id,
+            skip=skip,
+            limit=limit,
+            search=search,
+            status=status,
+            sort_by=sort_by,
+            order=order,
         )
     return docs
 
@@ -157,6 +182,36 @@ def get_document(
         )
 
     return doc
+
+
+@router.patch(
+    "/documents/{document_id}",
+    response_model=DocumentRead,
+    summary="Update document",
+    description="Update metadata atau judul dokumen.",
+)
+def update_document(
+    document_id: uuid.UUID,
+    obj_in: DocumentUpdate,
+    db: Session = Depends(get_db),  # noqa: B008
+    current_user: User = Depends(get_current_user),  # noqa: B008
+) -> DocumentRead:
+    """Update dokumen. User hanya bisa mengupdate dokumen miliknya sendiri."""
+    doc = document_service.get(db, document_id=document_id)
+    if not doc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document tidak ditemukan.",
+        )
+
+    # Cek ownership (admin bisa update semua)
+    if current_user.role != UserRole.ADMIN and doc.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Anda tidak memiliki akses untuk mengupdate dokumen ini.",
+        )
+
+    return document_service.update(db, db_obj=doc, obj_in=obj_in)
 
 
 @router.delete(
