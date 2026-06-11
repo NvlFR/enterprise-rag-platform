@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Document } from "@/hooks/use-documents"
 import { toast } from "sonner"
-import { Tag, FileInfo, Calendar } from "lucide-react"
+import { Tag, FileText, Calendar } from "lucide-react"
 import { format } from "date-fns"
 
 interface MetadataEditorProps {
@@ -129,7 +129,7 @@ export const MetadataEditor = ({ document, isOpen, onClose, onSave }: MetadataEd
           <div className="grid grid-cols-2 gap-4 pt-4 border-t dark:border-zinc-800">
             <div className="space-y-1">
               <span className="text-[10px] uppercase font-bold text-zinc-400 flex items-center gap-1">
-                <FileInfo className="h-3 w-3" />
+                <FileText className="h-3 w-3" />
                 File Info
               </span>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 truncate">
