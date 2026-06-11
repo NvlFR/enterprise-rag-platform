@@ -23,7 +23,7 @@ export function SourcePopover({ citation, children }: SourcePopoverProps) {
   const { openViewer } = useSourceViewer()
 
   return (
-    <Popover>
+    <Popover openOnHover delay={200} closeDelay={200}>
       <PopoverTrigger render={children} />
       <PopoverContent align="start" className="w-80">
         <PopoverHeader>
