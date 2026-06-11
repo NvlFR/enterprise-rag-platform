@@ -7,6 +7,7 @@ export interface SourcePreview {
   document_title: string;
   content: string;
   metadata: Record<string, unknown>;
+  presigned_url?: string;
   context: Array<{
     id: string;
     index: number;

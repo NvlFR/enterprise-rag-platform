@@ -9,6 +9,7 @@ from app.api import deps
 from app.models.document import Document
 from app.models.user import User
 from app.repositories.vector_repository import VectorRepository
+from app.services.storage import storage_service
 
 router = APIRouter()
 
@@ -53,6 +54,11 @@ async def get_source_preview(
     else:
         context_chunks = [chunk]
 
+    # Generate presigned URL if S3 key exists
+    presigned_url = None
+    if document.s3_key:
+        presigned_url = await storage_service.get_presigned_url(document.s3_key)
+
     # 4. Format response
     return {
         "chunk_id": str(chunk.id),
@@ -60,6 +66,7 @@ async def get_source_preview(
         "document_title": document.title,
         "content": chunk.content,
         "metadata": chunk.chunk_metadata,
+        "presigned_url": presigned_url,
         "context": [
             {
                 "id": str(c.id),
