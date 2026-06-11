@@ -89,7 +89,7 @@ This index tracks all tasks required to build the Enterprise Knowledge Assistant
 - [x] TASK-053: Message Components (Markdown Support)
 - [x] TASK-054: Source Citation Tooltips and Popovers
 - [x] TASK-055: Document Source Viewer (PDF Sidebar)
-- [ ] TASK-056: Typing Indicators and Streaming UI
+- [x] TASK-056: Typing Indicators and Streaming UI
 
 ### 12. Frontend - Document Management
 - [x] TASK-057: Document Upload Interface (Drag & Drop)
