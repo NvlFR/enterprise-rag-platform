@@ -57,3 +57,4 @@ coverage.xml
 Thumbs.db
 .gemini/
 gha-creds-*.json
+backend/backend_server.log
